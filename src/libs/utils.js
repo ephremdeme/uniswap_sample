@@ -1,8 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { CurrencyAmount, Token, TradeType } from "@uniswap/sdk-core";
-import { SwapQuoter, Trade } from "@uniswap/v3-sdk";
+import { Token, TradeType } from "@uniswap/sdk-core";
+import { Trade } from "@uniswap/v3-sdk";
 import { BigNumber, ethers, providers } from "ethers";
-import { CurrentConfig, QUOTER_CONTRACT_ADDRESS } from "./constants";
 import ERC20_ABI from "./ERC20_abi.json";
 
 const READABLE_FORM_LEN = 6;
@@ -44,42 +43,6 @@ export function displayTrade(trade) {
   return `${trade.inputAmount.toExact()} ${
     trade.inputAmount.currency.symbol
   } for ${trade.outputAmount.toExact()} ${trade.outputAmount.currency.symbol}`;
-}
-
-/**
- *
- *
- * @export
- * @param {Route<Currency, Currency>} route
- * @param {providers.Provider} provider
- * @return {ethers.utils.Result}
- */
-export async function getOutputQuote(route, provider) {
-  if (!provider) {
-    throw new Error("Provider required to get pool state");
-  }
-
-  const { calldata } = await SwapQuoter.quoteCallParameters(
-    route,
-    CurrencyAmount.fromRawAmount(
-      CurrentConfig.tokens.in,
-      fromReadableAmount(
-        CurrentConfig.tokens.amountIn,
-        CurrentConfig.tokens.in.decimals
-      ).toString()
-    ),
-    TradeType.EXACT_INPUT,
-    {
-      useQuoterV2: true,
-    }
-  );
-
-  const quoteCallReturnData = await provider.call({
-    to: QUOTER_CONTRACT_ADDRESS,
-    data: calldata,
-  });
-
-  return ethers.utils.defaultAbiCoder.decode(["uint256"], quoteCallReturnData);
 }
 
 /**

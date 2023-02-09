@@ -1,4 +1,4 @@
-import { BigNumber, ethers, Wallet } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { INFURA_GORLI_RPC } from "./constants";
 
 export function getProvider() {
@@ -15,9 +15,9 @@ export const TransactionState = {
 
 /**
  *
- * @param {Wallet} wallet
+ * @param {import('ethers').Wallet} wallet
  * @param {ethers.providers.TransactionRequest} transaction
- * @return {Promise<TransactionState>}
+ * @return {Promise<String>}
  */
 export async function sendTransactionViaWallet(wallet, transaction) {
   if (transaction.value) {
@@ -33,6 +33,6 @@ export async function sendTransactionViaWallet(wallet, transaction) {
     return TransactionState.Failed;
   }
   // Transaction was successful if status === 1
-  console.log("Receipt => ", receipt);
+  // console.log("Receipt => ", receipt);
   return TransactionState.Sent;
 }

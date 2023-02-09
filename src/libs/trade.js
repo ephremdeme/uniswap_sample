@@ -1,19 +1,15 @@
+/* eslint-disable no-unused-vars */
 import {
   CurrencyAmount,
   Percent,
   SupportedChainId,
+  Token,
   TradeType,
 } from "@uniswap/sdk-core";
-import { BigNumber, ethers, Wallet } from "ethers";
+import { ethers, Wallet } from "ethers";
 import { AlphaRouter, ChainId, SwapType } from "@uniswap/smart-order-router";
 
-import {
-  SWAP_ROUTER_ADDRESS,
-  MAX_FEE_PER_GAS,
-  MAX_PRIORITY_FEE_PER_GAS,
-  TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-  V3_SWAP_ROUTER_ADDRESS,
-} from "./constants";
+import { V3_SWAP_ROUTER_ADDRESS } from "./constants";
 
 import { fromReadableAmount } from "./utils";
 import { sendTransactionViaWallet, TransactionState } from "./provider";
@@ -149,7 +145,7 @@ export async function generateRoute({
     TradeType.EXACT_INPUT,
     options,
     {
-      maxSwapsPerPath: 1,
+      maxSwapsPerPath: 3, // default is 3
     }
   );
 
