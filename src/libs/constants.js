@@ -1,4 +1,3 @@
-import { SupportedChainId, Token } from "@uniswap/sdk-core";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import dotenv from "dotenv";
 
@@ -21,34 +20,24 @@ export const WBTC_CONTRACT_ADDRESS =
 export const UNI_CONTRACT_ADDRESS =
   "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
 
+/**
+ * @dev Goerli Testnet Addresses
+ */
+
+export const GOERLI_WETH_CONTRACT_ADDRESS =
+  "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
+export const GOERLI_USDC_TOKEN_CONTRACT_ADDRESS =
+  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+export const GOERLI_WBTC_CONTRACT_ADDRESS =
+  "0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa";
+export const GOERLI_UNI_CONTRACT_ADDRESS =
+  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+export const GOERLI_USDT_CONTRACT_ADDRESS =
+  "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49";
+
 export const { INFURA_GORLI_RPC } = process.env;
 export const { PRIVATE_KEY } = process.env;
 export const { INFURA_RPC_ADDRESS } = process.env;
-
-// Currencies and Tokens for Goerli Testing purpose
-export const WETH_TOKEN = new Token(
-  SupportedChainId.GOERLI,
-  "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  18,
-  "WETH",
-  "Wrapped Ether"
-);
-
-export const DAI_TOKEN = new Token(
-  SupportedChainId.GOERLI,
-  "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-  18,
-  "DAI",
-  "Dai Stablecoin"
-);
-
-export const USDC_TOKEN = new Token(
-  SupportedChainId.GOERLI,
-  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-  6,
-  "USDC",
-  "USD//C"
-);
 
 export const CurrentConfig = {
   rpc: {
@@ -56,9 +45,7 @@ export const CurrentConfig = {
     mainnet: "rpc",
   },
   tokens: {
-    in: WETH_TOKEN,
     amountIn: 1,
-    out: USDC_TOKEN,
     fee: FeeAmount.MEDIUM,
   },
 };
