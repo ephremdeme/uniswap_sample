@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, Wallet } from "ethers";
 import { INFURA_GORLI_RPC } from "./constants";
 
 export function getProvider() {
@@ -15,42 +15,24 @@ export const TransactionState = {
 
 /**
  *
- * @param {providers.Provider} provider
+ * @param {Wallet} wallet
  * @param {ethers.providers.TransactionRequest} transaction
- * @param {ethers.Wallet} wallet
  * @return {Promise<TransactionState>}
  */
-export async function sendTransactionViaWallet(provider, wallet, transaction) {
+export async function sendTransactionViaWallet(wallet, transaction) {
   if (transaction.value) {
     // eslint-disable-next-line no-param-reassign
     transaction.value = BigNumber.from(transaction.value);
   }
-  const txRes = await wallet.sendTransaction(transaction);
 
-  let receipt = null;
+  const approvedTx = await wallet.sendTransaction(transaction);
 
-  if (!provider) {
+  const receipt = await approvedTx.wait(1);
+
+  if (receipt.status === 0) {
     return TransactionState.Failed;
   }
-
-  while (receipt === null) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      receipt = await provider.getTransactionReceipt(txRes.hash);
-
-      if (receipt === null) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-    } catch (e) {
-      console.log(`Receipt error:`, e);
-      break;
-    }
-  }
-
   // Transaction was successful if status === 1
-  if (receipt) {
-    return TransactionState.Sent;
-  }
-  return TransactionState.Failed;
+  console.log("Receipt => ", receipt);
+  return TransactionState.Sent;
 }

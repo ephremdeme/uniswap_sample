@@ -1,4 +1,9 @@
-import { CurrencyAmount, Percent, TradeType } from "@uniswap/sdk-core";
+import {
+  CurrencyAmount,
+  Percent,
+  SupportedChainId,
+  TradeType,
+} from "@uniswap/sdk-core";
 import { BigNumber, ethers, Wallet } from "ethers";
 import { AlphaRouter, ChainId, SwapType } from "@uniswap/smart-order-router";
 
@@ -21,16 +26,16 @@ import ERC20_ABI from "./ERC20_abi.json";
  * @param {Object} options
  * @param {providers.Provider} options.provider
  * @param {Token} options.token
- * @param {String} options.address
+ * @param {Wallet} options.wallet
  * @return {*}  {Promise<TransactionState>}
  */
 export async function getTokenTransferApproval({
   provider,
   token,
-  address,
   wallet,
+  amount,
 }) {
-  if (!provider || !address) {
+  if (!provider) {
     console.log("No Provider Found");
     return TransactionState.Failed;
   }
@@ -43,19 +48,12 @@ export async function getTokenTransferApproval({
     );
 
     const transaction = await tokenContract.populateTransaction.approve(
-      SWAP_ROUTER_ADDRESS,
-      fromReadableAmount(
-        TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-        token.decimals
-      ).toString()
+      V3_SWAP_ROUTER_ADDRESS,
+      fromReadableAmount(amount, token.decimals).toString()
     );
-
-    if (transaction && transaction.value) {
-      transaction.value = BigNumber.from(transaction.value);
-    }
-    return sendTransactionViaWallet(provider, wallet, {
+    return await sendTransactionViaWallet(wallet, {
       ...transaction,
-      from: address,
+      from: wallet.address,
     });
   } catch (e) {
     console.error(e);
@@ -75,7 +73,13 @@ export async function getTokenTransferApproval({
  * @param {import("@uniswap/smart-order-router").SwapRoute} options.route
  * @return {Promise<TransactionState>}
  */
-export async function executeTrade({ route, provider, wallet, tokenIn }) {
+export async function executeTrade({
+  route,
+  provider,
+  wallet,
+  tokenIn,
+  amount,
+}) {
   if (!wallet.address || !provider) {
     throw new Error("Cannot execute a trade without a connected wallet");
   }
@@ -84,24 +88,22 @@ export async function executeTrade({ route, provider, wallet, tokenIn }) {
   const tokenApproval = await getTokenTransferApproval({
     token: tokenIn,
     provider,
-    address: wallet.address,
     wallet,
+    amount,
   });
-
-  console.log("Token Approval => ", tokenApproval);
 
   // Fail if transfer approvals do not go through
   if (tokenApproval !== TransactionState.Sent) {
     return TransactionState.Failed;
   }
 
-  const res = await sendTransactionViaWallet(provider, wallet, {
+  const res = await sendTransactionViaWallet(wallet, {
     data: route.methodParameters?.calldata,
     to: V3_SWAP_ROUTER_ADDRESS,
     value: route?.methodParameters?.value,
     from: wallet.address,
-    maxFeePerGas: MAX_FEE_PER_GAS,
-    maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+    gasLimit: 5000000,
+    chainId: SupportedChainId.GOERLI,
   });
 
   return res;
@@ -117,7 +119,7 @@ export async function executeTrade({ route, provider, wallet, tokenIn }) {
  * @param {Token} options.tokenOut
  * @param {String} options.amount
  * @param {String} options.walletAddress
- * @return {Promise<SwapRoute | null>}
+ * @return {Promise<import("@uniswap/smart-order-router").SwapRoute | null>}
  */
 export async function generateRoute({
   provider,
@@ -145,7 +147,10 @@ export async function generateRoute({
     ),
     tokenOut,
     TradeType.EXACT_INPUT,
-    options
+    options,
+    {
+      maxSwapsPerPath: 1,
+    }
   );
 
   return route;

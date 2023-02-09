@@ -32,7 +32,7 @@ class Uniswap {
   }
 
   async getToken(address) {
-    const contract = new ethers.Contract(address, ERC20_ABI, this.provider);
+    const contract = new ethers.Contract(address, ERC20_ABI, this.wallet);
 
     const [decimals, symbol, name] = await Promise.all([
       contract.decimals(),
@@ -80,13 +80,13 @@ class Uniswap {
       walletAddress: this.wallet.address,
     });
 
-    console.log(swapRoute);
     const res = await executeTrade({
       route: swapRoute,
       tokenIn: contractIn,
       provider: this.provider,
       wallet: this.wallet,
       tokenOut: contractOut,
+      amount,
     });
     return res;
   }
@@ -94,23 +94,38 @@ class Uniswap {
   async getWalletCurrencyBalance(currency) {
     // eslint-disable-next-line no-param-reassign
     currency = await this.getToken(currency);
-    console.log(currency);
     return getCurrencyBalance({
       provider: this.provider,
       address: this.wallet.address,
       currency,
     });
   }
+
+  async getTokenAndBalance(currency) {
+    const contract = new ethers.Contract(currency, ERC20_ABI, this.wallet);
+
+    const [dec, symbol, name, balance] = await Promise.all([
+      contract.decimals(),
+      contract.symbol(),
+      contract.name(),
+      contract.balanceOf(this.wallet.address),
+    ]);
+
+    return [
+      new Token(SupportedChainId.GOERLI, contract.address, dec, symbol, name),
+      balance,
+    ];
+  }
 }
 
 (async () => {
   const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
 
-  const swapUNIbyETH = await uniswapClient.getExchangeRate(
-    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-    "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
-  );
-  console.log(swapUNIbyETH);
+  // const swapUNIbyETH = await uniswapClient.getExchangeRate(
+  //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  //   "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+  // );
+  // console.log(swapUNIbyETH);
 
   // const swapETHbyUSDC = await uniswapClient.getExchangeRate(
   //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
@@ -119,16 +134,19 @@ class Uniswap {
 
   // console.log(swapETHbyUSDC);
 
-  const ethBalance = await uniswapClient.getWalletCurrencyBalance(
-    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+  const [ethBalance, balance] = await uniswapClient.getTokenAndBalance(
+    "0xffb99f4a02712c909d8f7cc44e67c87ea1e71e83"
   );
-  console.log("Wallet => ", ethBalance);
-
-  const swapped = await uniswapClient.exchangeToken(
-    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-    "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
-    0.001
+  console.log(
+    `   Input: ${ethBalance.symbol} (${
+      ethBalance.name
+    }): ${ethers.utils.formatUnits(balance, ethBalance.decimals)}`
   );
+  // const swapped = await uniswapClient.exchangeToken(
+  //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  //   "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+  //   0.01
+  // );
 
-  console.log("swapped => ", swapped);
+  // console.log("swapped => ", swapped);
 })();
