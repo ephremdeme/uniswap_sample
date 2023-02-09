@@ -7,13 +7,11 @@ import { SupportedChainId, Token } from "@uniswap/sdk-core";
 import ERC20_ABI from "./libs/ERC20_abi.json";
 
 import {
+  GOERLI_UNI_CONTRACT_ADDRESS,
+  GOERLI_USDT_CONTRACT_ADDRESS,
   INFURA_GORLI_RPC,
-  INFURA_RPC_ADDRESS,
   PRIVATE_KEY,
   QUOTER_CONTRACT_ADDRESS,
-  UNI_CONTRACT_ADDRESS,
-  USDC_TOKEN_CONTRACT_ADDRESS,
-  WETH_CONTRACT_ADDRESS,
 } from "./libs/constants";
 import {
   fromReadableAmount,
@@ -121,32 +119,44 @@ class Uniswap {
 (async () => {
   const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
 
-  // const swapUNIbyETH = await uniswapClient.getExchangeRate(
-  //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  //   "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
+  // const swapUNIbyETHRate = await uniswapClient.getExchangeRate(
+  //   UNI_CONTRACT_ADDRESS,
+  //   WETH_CONTRACT_ADDRESS
   // );
-  // console.log(swapUNIbyETH);
+  // console.log(swapUNIbyETHRate);
 
-  // const swapETHbyUSDC = await uniswapClient.getExchangeRate(
-  //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  //   "0xcc7bb2d219a0fc08033e130629c2b854b7ba9195"
+  // const swapETHbyUSDCRate = await uniswapClient.getExchangeRate(
+  //   WETH_CONTRACT_ADDRESS,
+  //   USDC_TOKEN_CONTRACT_ADDRESS
   // );
 
-  // console.log(swapETHbyUSDC);
+  // console.log(swapETHbyUSDCRate);
 
-  const [ethBalance, balance] = await uniswapClient.getTokenAndBalance(
-    "0xffb99f4a02712c909d8f7cc44e67c87ea1e71e83"
+  // Testing Swap and Balance Using Goerli Testnet
+
+  let [inputToken, balance] = await uniswapClient.getTokenAndBalance(
+    GOERLI_USDT_CONTRACT_ADDRESS
   );
   console.log(
-    `   Input: ${ethBalance.symbol} (${
-      ethBalance.name
-    }): ${ethers.utils.formatUnits(balance, ethBalance.decimals)}`
+    `   Input: ${inputToken.symbol} (${
+      inputToken.name
+    }) => Balance:  ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
   );
-  // const swapped = await uniswapClient.exchangeToken(
-  //   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  //   "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
-  //   0.01
-  // );
 
-  // console.log("swapped => ", swapped);
+  const swapped = await uniswapClient.exchangeToken(
+    GOERLI_USDT_CONTRACT_ADDRESS,
+    GOERLI_UNI_CONTRACT_ADDRESS,
+    140
+  );
+
+  console.log("swapped => ", swapped);
+
+  [inputToken, balance] = await uniswapClient.getTokenAndBalance(
+    GOERLI_USDT_CONTRACT_ADDRESS
+  );
+  console.log(
+    `   Input: ${inputToken.symbol} (${
+      inputToken.name
+    }): ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
+  );
 })();
