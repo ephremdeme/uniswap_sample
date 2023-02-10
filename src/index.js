@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { ethers } from "ethers";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Quoter from "@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json";
@@ -10,15 +11,23 @@ import {
   GOERLI_UNI_CONTRACT_ADDRESS,
   GOERLI_USDT_CONTRACT_ADDRESS,
   INFURA_GORLI_RPC,
+  NONFUNGIBLE_POSITION_MANAGER_ABI,
+  NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
   PRIVATE_KEY,
   QUOTER_CONTRACT_ADDRESS,
 } from "./libs/constants";
 import {
   fromReadableAmount,
   getCurrencyBalance,
+  parsePositionInfo,
   toReadableAmount,
 } from "./libs/utils";
 import { executeTrade, generateRoute } from "./libs/trade";
+import {
+  getPositionInfo,
+  mintPosition,
+  removeLiquidity,
+} from "./libs/liquidity";
 
 class Uniswap {
   constructor(urlRPC, privateKey) {
@@ -114,6 +123,85 @@ class Uniswap {
       balance,
     ];
   }
+
+  async createLiquidty(tokenA, tokenB, amountA, amountB) {
+    const [token0, token1] = await Promise.all([
+      this.getToken(tokenA),
+      this.getToken(tokenB),
+    ]);
+
+    const liquidity = await mintPosition({
+      wallet: this.wallet,
+      token0,
+      token1,
+      token0Amount: amountA,
+      token1Amount: amountB,
+    });
+
+    return liquidity;
+  }
+
+  async getLiquidityPositions() {
+    const positionContract = new ethers.Contract(
+      NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+      NONFUNGIBLE_POSITION_MANAGER_ABI,
+      this.provider
+    );
+
+    // Get number of positions
+    const balance = await positionContract.balanceOf(this.wallet.address);
+
+    // Get all positions
+    const tokenIds = [];
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < balance; i++) {
+      const tokenOfOwnerByIndex = await positionContract.tokenOfOwnerByIndex(
+        this.wallet.address,
+        i
+      );
+
+      tokenIds.push(tokenOfOwnerByIndex);
+      const position = await getPositionInfo(
+        this.provider,
+        tokenOfOwnerByIndex
+      );
+      console.log(
+        "Position: ",
+        tokenOfOwnerByIndex.toString(),
+        parsePositionInfo(position)
+      );
+    }
+
+    return tokenIds;
+  }
+
+  async getLiquidityPosition(positionId) {
+    const position = await getPositionInfo(this.provider, positionId);
+    return position;
+  }
+
+  async getLiquidityPositionInfo(positionId) {
+    const position = await getPositionInfo(this.provider, positionId);
+    return parsePositionInfo(position);
+  }
+
+  async removeLiquidity(positionId, tokenA, tokenB, amountA, amountB) {
+    const [token0, token1] = await Promise.all([
+      this.getToken(tokenA),
+      this.getToken(tokenB),
+    ]);
+
+    const txId = await removeLiquidity({
+      wallet: this.wallet,
+      token0,
+      token1,
+      token0Amount: amountA,
+      token1Amount: amountB,
+      positionId,
+    });
+
+    return txId;
+  }
 }
 
 (async () => {
@@ -143,20 +231,43 @@ class Uniswap {
     }) => Balance:  ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
   );
 
-  const swapped = await uniswapClient.exchangeToken(
-    GOERLI_USDT_CONTRACT_ADDRESS,
-    GOERLI_UNI_CONTRACT_ADDRESS,
-    140
-  );
+  // const swapped = await uniswapClient.exchangeToken(
+  //   GOERLI_USDT_CONTRACT_ADDRESS,
+  //   GOERLI_UNI_CONTRACT_ADDRESS,
+  //   120 // amount
+  // );
 
-  console.log("swapped => ", swapped);
+  // console.log("swapped => ", swapped);
 
   [inputToken, balance] = await uniswapClient.getTokenAndBalance(
-    GOERLI_USDT_CONTRACT_ADDRESS
+    GOERLI_UNI_CONTRACT_ADDRESS
   );
   console.log(
     `   Input: ${inputToken.symbol} (${
       inputToken.name
     }): ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
   );
+
+  // Testing Create Liquidity
+
+  // const liquidity = await uniswapClient.createLiquidty(
+  //   GOERLI_UNI_CONTRACT_ADDRESS,
+  //   GOERLI_USDT_CONTRACT_ADDRESS,
+  //   0.02,
+  //   20
+  // );
+
+  const positionIds = await uniswapClient.getLiquidityPositions();
+
+  console.log("liquidity => ", positionIds);
+
+  const removedLiquidityTxHash = await uniswapClient.removeLiquidity(
+    positionIds[0],
+    GOERLI_UNI_CONTRACT_ADDRESS,
+    GOERLI_USDT_CONTRACT_ADDRESS,
+    0.02,
+    20
+  );
+
+  console.log("removedLiquidityTxHash => ", removedLiquidityTxHash);
 })();
