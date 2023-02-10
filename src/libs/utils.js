@@ -73,3 +73,6 @@ export async function getCurrencyBalance({ provider, address, currency }) {
   // Format with proper units (approximate)
   return toReadableAmount(balance, decimals).toString();
 }
+
+export const parsePositionInfo = (posInfo) =>
+  `${posInfo.liquidity.toString()} liquidity, owed ${posInfo.tokensOwed0.toString()} and ${posInfo.tokensOwed1.toString()}`;
