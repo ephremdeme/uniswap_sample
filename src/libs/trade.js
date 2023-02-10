@@ -12,50 +12,11 @@ import { AlphaRouter, ChainId, SwapType } from "@uniswap/smart-order-router";
 import { V3_SWAP_ROUTER_ADDRESS } from "./constants";
 
 import { fromReadableAmount } from "./utils";
-import { sendTransactionViaWallet, TransactionState } from "./provider";
-import ERC20_ABI from "./ERC20_abi.json";
-
-/**
- *
- *
- * @export
- * @param {Object} options
- * @param {providers.Provider} options.provider
- * @param {Token} options.token
- * @param {Wallet} options.wallet
- * @return {*}  {Promise<TransactionState>}
- */
-export async function getTokenTransferApproval({
-  provider,
-  token,
-  wallet,
-  amount,
-}) {
-  if (!provider) {
-    console.log("No Provider Found");
-    return TransactionState.Failed;
-  }
-
-  try {
-    const tokenContract = new ethers.Contract(
-      token.address,
-      ERC20_ABI,
-      provider
-    );
-
-    const transaction = await tokenContract.populateTransaction.approve(
-      V3_SWAP_ROUTER_ADDRESS,
-      fromReadableAmount(amount, token.decimals).toString()
-    );
-    return await sendTransactionViaWallet(wallet, {
-      ...transaction,
-      from: wallet.address,
-    });
-  } catch (e) {
-    console.error(e);
-    return TransactionState.Failed;
-  }
-}
+import {
+  getTokenTransferApproval,
+  sendTransactionViaWallet,
+  TransactionState,
+} from "./provider";
 
 /**
  *
@@ -83,9 +44,9 @@ export async function executeTrade({
   // Give approval to the router to spend the token
   const tokenApproval = await getTokenTransferApproval({
     token: tokenIn,
-    provider,
     wallet,
     amount,
+    contracAddress: V3_SWAP_ROUTER_ADDRESS,
   });
 
   // Fail if transfer approvals do not go through
