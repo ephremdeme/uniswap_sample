@@ -5,7 +5,7 @@ import Quoter from "@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Qu
 import { FeeAmount } from "@uniswap/v3-sdk";
 import { SupportedChainId, Token } from "@uniswap/sdk-core";
 
-import ERC20_ABI from "./libs/ERC20_abi.json";
+import ERC20_ABI from "../libs/ERC20_abi.json";
 
 import {
   GOERLI_UNI_CONTRACT_ADDRESS,
@@ -15,19 +15,19 @@ import {
   NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
   PRIVATE_KEY,
   QUOTER_CONTRACT_ADDRESS,
-} from "./libs/constants";
+} from "../libs/constants";
 import {
   fromReadableAmount,
   getCurrencyBalance,
   parsePositionInfo,
   toReadableAmount,
-} from "./libs/utils";
-import { executeTrade, generateRoute } from "./libs/trade";
+} from "../libs/utils";
+import { executeTrade, generateRoute } from "../libs/trade";
 import {
   getPositionInfo,
   mintPosition,
   removeLiquidity,
-} from "./libs/liquidity";
+} from "../libs/liquidity";
 
 class Uniswap {
   constructor(urlRPC, privateKey) {
@@ -204,70 +204,72 @@ class Uniswap {
   }
 }
 
-(async () => {
-  const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
+export default Uniswap;
 
-  // const swapUNIbyETHRate = await uniswapClient.getExchangeRate(
-  //   UNI_CONTRACT_ADDRESS,
-  //   WETH_CONTRACT_ADDRESS
-  // );
-  // console.log(swapUNIbyETHRate);
+// (async () => {
+//   const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
 
-  // const swapETHbyUSDCRate = await uniswapClient.getExchangeRate(
-  //   WETH_CONTRACT_ADDRESS,
-  //   USDC_TOKEN_CONTRACT_ADDRESS
-  // );
+//   // const swapUNIbyETHRate = await uniswapClient.getExchangeRate(
+//   //   UNI_CONTRACT_ADDRESS,
+//   //   WETH_CONTRACT_ADDRESS
+//   // );
+//   // console.log(swapUNIbyETHRate);
 
-  // console.log(swapETHbyUSDCRate);
+//   // const swapETHbyUSDCRate = await uniswapClient.getExchangeRate(
+//   //   WETH_CONTRACT_ADDRESS,
+//   //   USDC_TOKEN_CONTRACT_ADDRESS
+//   // );
 
-  // Testing Swap and Balance Using Goerli Testnet
+//   // console.log(swapETHbyUSDCRate);
 
-  let [inputToken, balance] = await uniswapClient.getTokenAndBalance(
-    GOERLI_USDT_CONTRACT_ADDRESS
-  );
-  console.log(
-    `   Input: ${inputToken.symbol} (${
-      inputToken.name
-    }) => Balance:  ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
-  );
+//   // Testing Swap and Balance Using Goerli Testnet
 
-  // const swapped = await uniswapClient.exchangeToken(
-  //   GOERLI_USDT_CONTRACT_ADDRESS,
-  //   GOERLI_UNI_CONTRACT_ADDRESS,
-  //   120 // amount
-  // );
+//   let [inputToken, balance] = await uniswapClient.getTokenAndBalance(
+//     GOERLI_USDT_CONTRACT_ADDRESS
+//   );
+//   console.log(
+//     `   Input: ${inputToken.symbol} (${
+//       inputToken.name
+//     }) => Balance:  ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
+//   );
 
-  // console.log("swapped => ", swapped);
+//   // const swapped = await uniswapClient.exchangeToken(
+//   //   GOERLI_USDT_CONTRACT_ADDRESS,
+//   //   GOERLI_UNI_CONTRACT_ADDRESS,
+//   //   120 // amount
+//   // );
 
-  [inputToken, balance] = await uniswapClient.getTokenAndBalance(
-    GOERLI_UNI_CONTRACT_ADDRESS
-  );
-  console.log(
-    `   Input: ${inputToken.symbol} (${
-      inputToken.name
-    }): ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
-  );
+//   // console.log("swapped => ", swapped);
 
-  // Testing Create Liquidity
+//   [inputToken, balance] = await uniswapClient.getTokenAndBalance(
+//     GOERLI_UNI_CONTRACT_ADDRESS
+//   );
+//   console.log(
+//     `   Input: ${inputToken.symbol} (${
+//       inputToken.name
+//     }): ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
+//   );
 
-  // const liquidity = await uniswapClient.createLiquidty(
-  //   GOERLI_UNI_CONTRACT_ADDRESS,
-  //   GOERLI_USDT_CONTRACT_ADDRESS,
-  //   0.02,
-  //   20
-  // );
+//   // Testing Create Liquidity
 
-  const positionIds = await uniswapClient.getLiquidityPositions();
+//   // const liquidity = await uniswapClient.createLiquidty(
+//   //   GOERLI_UNI_CONTRACT_ADDRESS,
+//   //   GOERLI_USDT_CONTRACT_ADDRESS,
+//   //   0.02,
+//   //   20
+//   // );
 
-  console.log("liquidity => ", positionIds);
+//   const positionIds = await uniswapClient.getLiquidityPositions();
 
-  const removedLiquidityTxHash = await uniswapClient.removeLiquidity(
-    positionIds[0],
-    GOERLI_UNI_CONTRACT_ADDRESS,
-    GOERLI_USDT_CONTRACT_ADDRESS,
-    0.02,
-    20
-  );
+//   console.log("liquidity => ", positionIds);
 
-  console.log("removedLiquidityTxHash => ", removedLiquidityTxHash);
-})();
+//   const removedLiquidityTxHash = await uniswapClient.removeLiquidity(
+//     positionIds[0],
+//     GOERLI_UNI_CONTRACT_ADDRESS,
+//     GOERLI_USDT_CONTRACT_ADDRESS,
+//     0.02,
+//     20
+//   );
+
+//   console.log("removedLiquidityTxHash => ", removedLiquidityTxHash);
+// })();
