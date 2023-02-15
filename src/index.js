@@ -1,9 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import express from "express";
 import cors from "cors";
-import Uniswap from "./uniswap";
-import { INFURA_GORLI_RPC, PRIVATE_KEY } from "./libs/constants";
+import { DEMO_PASSWORD, DEMO_USERNAME } from "./libs/constants";
 import connectDb from "./config/db";
+import generateJwtToken from "./util/generateJWTToken";
+import route from "./uniswap/routes";
+import authenticate from "./middleware/authentication";
 
 const app = express();
 
@@ -11,82 +13,19 @@ app.use(express.json());
 app.use(cors());
 connectDb();
 
-const PORT = 5000;
+const PORT = 5005;
 
-const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
+app.use("/api", authenticate(), route);
 
-// get exchange rate from token to token (tokenFrom, tokenTo)
-app.get("/exchange-rate/:tokenFrom/:tokenTo", async (req, res) => {
-  const { tokenFrom, tokenTo } = req.params;
-  const exchangeRate = await uniswapClient.getExchangeRate(tokenFrom, tokenTo);
-  res.json(exchangeRate);
-});
+app.post("/login", async (req, res) => {
+  console.log(req.body);
+  const { username, password } = req.body;
 
-// get token balance
-app.get("/token-balance/:tokenAddress", async (req, res) => {
-  const { tokenAddress } = req.params;
-  const tokenBalance = await uniswapClient.getTokenAndBalance(tokenAddress);
-  res.json(tokenBalance);
-});
-
-// get position info
-app.get("/positions/:posId/info", async (req, res) => {
-  const { posId } = req.params;
-  const positionInfo = await uniswapClient.getLiquidityPositionInfo(posId);
-  res.json(positionInfo);
-});
-
-// get position
-app.get("/positions/:posId", async (req, res) => {
-  const { posId } = req.params;
-  const position = await uniswapClient.getLiquidityPosition(posId);
-  res.json(position);
-});
-
-// get all positions
-app.get("/positions", async (req, res) => {
-  const positions = await uniswapClient.getLiquidityPositions();
-  res.json(positions);
-});
-
-// remove liquidity
-app.post("/positions/:posId", async (req, res) => {
-  const { posId } = req.params;
-  const { tokenA, tokenB, amountA, amountB } = req.body;
-
-  const txId = await uniswapClient.removeLiquidity(
-    posId,
-    tokenA,
-    tokenB,
-    amountA,
-    amountB
-  );
-  res.json(txId);
-});
-
-// add liquidity
-app.post("/positions", async (req, res) => {
-  const { tokenA, tokenB, amountA, amountB } = req.body;
-  const txId = await uniswapClient.addLiquidity(
-    tokenA,
-    tokenB,
-    amountA,
-    amountB
-  );
-  res.json(txId);
-});
-
-// swap token
-app.post("/swap", async (req, res) => {
-  const { tokenFrom, tokenTo, amountIn, amountOut } = req.body;
-  const txId = await uniswapClient.swap(
-    tokenFrom,
-    tokenTo,
-    amountIn,
-    amountOut
-  );
-
-  res.json(txId);
+  if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
+    const token = generateJwtToken({ username, id: Date.now() });
+    return res.json({ token });
+  }
+  return res.status(401).json({ message: "Invalid username or password" });
 });
 
 app.listen(process.env.PORT || PORT, () => {
