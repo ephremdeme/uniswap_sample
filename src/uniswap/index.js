@@ -8,12 +8,8 @@ import { SupportedChainId, Token } from "@uniswap/sdk-core";
 import ERC20_ABI from "../libs/ERC20_abi.json";
 
 import {
-  GOERLI_UNI_CONTRACT_ADDRESS,
-  GOERLI_USDT_CONTRACT_ADDRESS,
-  INFURA_GORLI_RPC,
   NONFUNGIBLE_POSITION_MANAGER_ABI,
   NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
-  PRIVATE_KEY,
   QUOTER_CONTRACT_ADDRESS,
 } from "../libs/constants";
 import {
@@ -205,71 +201,3 @@ class Uniswap {
 }
 
 export default Uniswap;
-
-// (async () => {
-//   const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
-
-//   // const swapUNIbyETHRate = await uniswapClient.getExchangeRate(
-//   //   UNI_CONTRACT_ADDRESS,
-//   //   WETH_CONTRACT_ADDRESS
-//   // );
-//   // console.log(swapUNIbyETHRate);
-
-//   // const swapETHbyUSDCRate = await uniswapClient.getExchangeRate(
-//   //   WETH_CONTRACT_ADDRESS,
-//   //   USDC_TOKEN_CONTRACT_ADDRESS
-//   // );
-
-//   // console.log(swapETHbyUSDCRate);
-
-//   // Testing Swap and Balance Using Goerli Testnet
-
-//   let [inputToken, balance] = await uniswapClient.getTokenAndBalance(
-//     GOERLI_USDT_CONTRACT_ADDRESS
-//   );
-//   console.log(
-//     `   Input: ${inputToken.symbol} (${
-//       inputToken.name
-//     }) => Balance:  ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
-//   );
-
-//   // const swapped = await uniswapClient.exchangeToken(
-//   //   GOERLI_USDT_CONTRACT_ADDRESS,
-//   //   GOERLI_UNI_CONTRACT_ADDRESS,
-//   //   120 // amount
-//   // );
-
-//   // console.log("swapped => ", swapped);
-
-//   [inputToken, balance] = await uniswapClient.getTokenAndBalance(
-//     GOERLI_UNI_CONTRACT_ADDRESS
-//   );
-//   console.log(
-//     `   Input: ${inputToken.symbol} (${
-//       inputToken.name
-//     }): ${ethers.utils.formatUnits(balance, inputToken.decimals)}`
-//   );
-
-//   // Testing Create Liquidity
-
-//   // const liquidity = await uniswapClient.createLiquidty(
-//   //   GOERLI_UNI_CONTRACT_ADDRESS,
-//   //   GOERLI_USDT_CONTRACT_ADDRESS,
-//   //   0.02,
-//   //   20
-//   // );
-
-//   const positionIds = await uniswapClient.getLiquidityPositions();
-
-//   console.log("liquidity => ", positionIds);
-
-//   const removedLiquidityTxHash = await uniswapClient.removeLiquidity(
-//     positionIds[0],
-//     GOERLI_UNI_CONTRACT_ADDRESS,
-//     GOERLI_USDT_CONTRACT_ADDRESS,
-//     0.02,
-//     20
-//   );
-
-//   console.log("removedLiquidityTxHash => ", removedLiquidityTxHash);
-// })();
