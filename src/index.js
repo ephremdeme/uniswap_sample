@@ -1,14 +1,17 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import express from "express";
 import cors from "cors";
 import Uniswap from "./uniswap";
 import { INFURA_GORLI_RPC, PRIVATE_KEY } from "./libs/constants";
+import connectDb from "./config/db";
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+connectDb();
 
-const PORT = 3000;
+const PORT = 5000;
 
 const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
 
