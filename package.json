@@ -19,7 +19,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^6.9.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.20.7",
