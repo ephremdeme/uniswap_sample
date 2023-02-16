@@ -8,8 +8,10 @@ import { SupportedChainId, Token } from "@uniswap/sdk-core";
 import ERC20_ABI from "../libs/ERC20_abi.json";
 
 import {
+  INFURA_GORLI_RPC,
   NONFUNGIBLE_POSITION_MANAGER_ABI,
   NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+  PRIVATE_KEY,
   QUOTER_CONTRACT_ADDRESS,
 } from "../libs/constants";
 import {
@@ -199,5 +201,7 @@ class Uniswap {
     return txId;
   }
 }
+
+export const defaultUniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
 
 export default Uniswap;
