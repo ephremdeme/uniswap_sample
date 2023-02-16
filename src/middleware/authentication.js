@@ -1,4 +1,4 @@
-import { expressjwt as jwt } from "express-jwt";
+import jwt from "express-jwt";
 import ErrorResponse from "../util/errorResponse";
 import { RESPONSE_STATUS_CODE } from "./errorHandler";
 
