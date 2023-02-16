@@ -18,8 +18,6 @@ export const errorHandler = () => (err, req, res, _next) => {
   }
   if (err.name === "UnauthorizedError") {
     const message = `Your session has expired, Please login again!`;
-    console.log("JWT Error");
-
     error = new ErrorResponse(message, RESPONSE_STATUS_CODE.un_authorized);
   }
 

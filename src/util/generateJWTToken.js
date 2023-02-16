@@ -5,7 +5,7 @@ export default function generateJwtToken(user) {
     {
       sub: user.id,
       id: user.id,
-      email: user.username,
+      username: user.username,
     },
     Buffer.from(process.env.ACCESS_TOKEN_SECRET, "base64"),
     { expiresIn: "30d" }
