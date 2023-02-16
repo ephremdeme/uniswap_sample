@@ -6,6 +6,8 @@ import connectDb from "./config/db";
 import generateJwtToken from "./util/generateJWTToken";
 import route from "./uniswap/routes";
 import authenticate from "./middleware/authentication";
+import accountRoute from "./routes/accounts";
+import tokenRoute from "./routes/tokens";
 
 const app = express();
 
@@ -15,10 +17,11 @@ connectDb();
 
 const PORT = 5005;
 
-app.use("/api", authenticate(), route);
+app.use("/api/uniswap", authenticate(), route);
+app.use("/api/accounts", authenticate(), accountRoute);
+app.use("/api/tokens", authenticate(), tokenRoute);
 
 app.post("/login", async (req, res) => {
-  console.log(req.body);
   const { username, password } = req.body;
 
   if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
