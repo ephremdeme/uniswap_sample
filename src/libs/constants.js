@@ -41,7 +41,7 @@ export const { INFURA_GORLI_RPC } = process.env;
 export const { PRIVATE_KEY } = process.env;
 export const { INFURA_RPC_ADDRESS } = process.env;
 export const { DEMO_USERNAME } = process.env;
-export const { DEMO_PASSWORD } = process.env;
+export const { DEMO_PASSWORD, ACCESS_TOKEN_SECRET } = process.env;
 
 export const CurrentConfig = {
   rpc: {
