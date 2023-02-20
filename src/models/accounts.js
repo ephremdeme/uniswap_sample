@@ -16,7 +16,6 @@ const AccountSchema = new Schema(
       required: [true, "Please add a private key"],
       unique: true,
       trim: true,
-      maxlength: [100, "Private key can not be more than 100 characters"],
     },
 
     tokens: [

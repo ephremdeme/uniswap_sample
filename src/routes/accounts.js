@@ -1,4 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import express from "express";
+import mongoose from "mongoose";
 import { decrypt, encrypt } from "../libs/encrypt";
 
 import Account from "../models/accounts";
@@ -11,7 +13,7 @@ const accountRoute = express.Router();
 
 // get all accounts
 accountRoute.get("/", async (req, res) => {
-  const accounts = await Account.find();
+  const accounts = await Account.find({}).lean();
   res.json(
     accounts.map((account) => ({
       ...account,
@@ -25,7 +27,7 @@ accountRoute.get("/:id", async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ message: "Id is required" });
 
-  const account = await Account.findById(id);
+  const account = await Account.findById(id).lean();
   if (!account) return res.status(404).json({ message: "Account not found" });
 
   return res.json({ ...account, privateKey: decrypt(account.privateKey) });
@@ -42,26 +44,35 @@ accountRoute.post("/", async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 
-  const account = await Account.create({ name, privateKey });
-  return res.json(account);
+  const account = await (await Account.create({ name, privateKey })).toJSON();
+  return res.json({ ...account, privateKey: decrypt(account.privateKey) });
 });
 
 // update account
 accountRoute.put("/:id", async (req, res) => {
   const { id } = req.params;
+
   const { name, privateKey: unEncryptedKey } = req.body;
-  const { error } = updateAccountValidator.validate(req.body);
+  const { error } = updateAccountValidator.validate({
+    name,
+    privateKey: unEncryptedKey,
+  });
   if (error) {
     return res.status(400).json({ message: error.message });
   }
 
   const privateKey = encrypt(unEncryptedKey);
-  const account = await Account.findByIdAndUpdate(
-    id,
-    { name, privateKey },
+  const account = await Account.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(id) },
+    { $set: { name, privateKey } },
     { new: true }
-  );
-  return res.json(account);
+  )
+    .lean()
+    .catch((err) => {
+      console.log("err => ", err);
+    });
+  console.log("account => ", account);
+  return res.json({ ...account, privateKey: decrypt(account.privateKey) });
 });
 
 // delete account
