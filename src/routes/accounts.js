@@ -1,4 +1,6 @@
 import express from "express";
+import { decrypt, encrypt } from "../libs/encrypt";
+
 import Account from "../models/accounts";
 import {
   createAccountValidator,
@@ -10,7 +12,12 @@ const accountRoute = express.Router();
 // get all accounts
 accountRoute.get("/", async (req, res) => {
   const accounts = await Account.find();
-  res.json(accounts);
+  res.json(
+    accounts.map((account) => ({
+      ...account,
+      privateKey: decrypt(account.privateKey),
+    }))
+  );
 });
 
 // get account by id
@@ -19,12 +26,16 @@ accountRoute.get("/:id", async (req, res) => {
   if (!id) return res.status(400).json({ message: "Id is required" });
 
   const account = await Account.findById(id);
-  return res.json(account);
+  if (!account) return res.status(404).json({ message: "Account not found" });
+
+  return res.json({ ...account, privateKey: decrypt(account.privateKey) });
 });
 
 // create account
 accountRoute.post("/", async (req, res) => {
-  const { name, privateKey } = req.body;
+  const { name, privateKey: unEncrypted } = req.body;
+
+  const privateKey = encrypt(unEncrypted);
 
   const { error } = createAccountValidator.validate(req.body);
   if (error) {
@@ -38,11 +49,13 @@ accountRoute.post("/", async (req, res) => {
 // update account
 accountRoute.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, privateKey } = req.body;
+  const { name, privateKey: unEncryptedKey } = req.body;
   const { error } = updateAccountValidator.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.message });
   }
+
+  const privateKey = encrypt(unEncryptedKey);
   const account = await Account.findByIdAndUpdate(
     id,
     { name, privateKey },
