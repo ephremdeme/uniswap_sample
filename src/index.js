@@ -4,7 +4,7 @@ import cors from "cors";
 import { DEMO_PASSWORD, DEMO_USERNAME } from "./libs/constants";
 import connectDb from "./config/db";
 import generateJwtToken from "./util/generateJWTToken";
-import route from "./uniswap/routes";
+import route from "./routes/uniswap";
 import authenticate from "./middleware/authentication";
 import accountRoute from "./routes/accounts";
 import tokenRoute from "./routes/tokens";
@@ -13,7 +13,6 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-connectDb();
 
 const PORT = 5005;
 
@@ -31,6 +30,13 @@ app.post("/login", async (req, res) => {
   return res.status(401).json({ message: "Invalid username or password" });
 });
 
+// handle 404
+app.use((req, res) => {
+  res.status(404).json({ message: "Not found" });
+});
+
 app.listen(process.env.PORT || PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+connectDb();
