@@ -17,7 +17,12 @@ const AccountSchema = new Schema(
       unique: true,
       trim: true,
     },
-
+    address: {
+      type: String,
+      required: [true, "Please add an address"],
+      unique: true,
+      trim: true,
+    },
     tokens: [
       {
         type: Schema.Types.ObjectId,
