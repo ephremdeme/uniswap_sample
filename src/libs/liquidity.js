@@ -219,7 +219,7 @@ export async function mintPosition({
  * @param {import('ethers').providers.Provider} provider
  * @param {number} tokenId
  *
- * @return {Promise<PositionInfo>}
+ * @return {Promise<Position>}
  */
 export async function getPositionInfo(provider, positionId) {
   if (!provider) {
@@ -237,10 +237,10 @@ export async function getPositionInfo(provider, positionId) {
   return {
     tickLower: position.tickLower,
     tickUpper: position.tickUpper,
-    liquidity: position.liquidity,
-    feeGrowthInside0LastX128: position.feeGrowthInside0LastX128,
-    feeGrowthInside1LastX128: position.feeGrowthInside1LastX128,
-    tokensOwed0: position.tokensOwed0,
-    tokensOwed1: position.tokensOwed1,
+    liquidity: position.liquidity.toString(),
+    feeGrowthInside0LastX128: position.feeGrowthInside0LastX128.toString(),
+    feeGrowthInside1LastX128: position.feeGrowthInside1LastX128.toString(),
+    tokensOwed0: position.tokensOwed0.toString(),
+    tokensOwed1: position.tokensOwed1.toString(),
   };
 }
