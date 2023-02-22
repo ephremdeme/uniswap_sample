@@ -147,27 +147,25 @@ class Uniswap {
     );
 
     // Get number of positions
-    const balance = await positionContract.balanceOf(this.wallet.address);
+    const balance = await positionContract.balanceOf(
+      NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS
+    );
 
     // Get all positions
     const tokenIds = [];
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < balance; i++) {
       const tokenOfOwnerByIndex = await positionContract.tokenOfOwnerByIndex(
-        this.wallet.address,
+        NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
         i
       );
 
-      tokenIds.push(tokenOfOwnerByIndex);
       const position = await getPositionInfo(
         this.provider,
         tokenOfOwnerByIndex
       );
-      console.log(
-        "Position: ",
-        tokenOfOwnerByIndex.toString(),
-        parsePositionInfo(position)
-      );
+      tokenIds.push(position);
+      console.log("Position: ", tokenOfOwnerByIndex.toString(), position);
     }
 
     return tokenIds;
