@@ -23,27 +23,38 @@ route.get("/token-balance/:tokenAddress", async (req, res) => {
 });
 
 // get position info
-route.get("/positions/:posId/info", async (req, res) => {
+route.get("/:walletId/positions/:posId/info", async (req, res) => {
   const { posId } = req.params;
   const positionInfo = await uniswapClient.getLiquidityPositionInfo(posId);
   res.json(positionInfo);
 });
 
 // get position
-route.get("/positions/:posId", async (req, res) => {
+route.get("/:walletId/positions/:posId", async (req, res) => {
   const { posId } = req.params;
   const position = await uniswapClient.getLiquidityPosition(posId);
   res.json(position);
 });
 
 // get all positions
-route.get("/positions", async (req, res) => {
-  const positions = await uniswapClient.getLiquidityPositions();
-  res.json(positions);
+route.get("/:walletId/positions", async (req, res) => {
+  const { walletId } = req.params;
+
+  const wallet = await Account.findById(walletId);
+  if (!wallet) {
+    return res.status(400).json({ error: "Wallet not found" });
+  }
+
+  const privateKey = decrypt(wallet.privateKey); //
+
+  const uniClient = new Uniswap(INFURA_GORLI_RPC, privateKey);
+
+  const positions = await uniClient.getLiquidityPositions();
+  return res.json(positions);
 });
 
 // remove liquidity
-route.post("/positions/:posId", async (req, res) => {
+route.post("/:walletId/positions/:posId", async (req, res) => {
   const { posId } = req.params;
   const { tokenA, tokenB, amountA, amountB } = req.body;
 
@@ -58,7 +69,7 @@ route.post("/positions/:posId", async (req, res) => {
 });
 
 // add liquidity
-route.post("/positions", async (req, res) => {
+route.post("/:walletId/positions", async (req, res) => {
   const { tokenA, tokenB, amountA, amountB } = req.body;
   const txId = await uniswapClient.addLiquidity(
     tokenA,
