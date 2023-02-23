@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-await-in-loop */
 import { ethers } from "ethers";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -147,24 +148,26 @@ class Uniswap {
     );
 
     // Get number of positions
-    const balance = await positionContract.balanceOf(
-      NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS
-    );
+    const balance = await positionContract.balanceOf(this.wallet.address);
 
     // Get all positions
     const tokenIds = [];
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < balance; i++) {
       const tokenOfOwnerByIndex = await positionContract.tokenOfOwnerByIndex(
-        NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+        this.wallet.address,
         i
       );
 
       const position = await getPositionInfo(
-        this.provider,
-        tokenOfOwnerByIndex
+        parseInt(tokenOfOwnerByIndex.toString(), 10)
       );
-      tokenIds.push(position);
+
+      tokenIds.push({
+        ...position,
+        balance0: (position.depositedToken0 - position.withdrawnToken0).toString().slice(0, -6),
+        balance1: (position.depositedToken1 - position.withdrawnToken1).toString().slice(0, -6)
+      });
       console.log("Position: ", tokenOfOwnerByIndex.toString(), position);
     }
 
