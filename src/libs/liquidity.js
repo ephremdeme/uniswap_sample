@@ -1,14 +1,13 @@
 import { CurrencyAmount, Percent, SupportedChainId } from "@uniswap/sdk-core";
+import axios from "axios";
 import {
   nearestUsableTick,
   NonfungiblePositionManager,
   Pool,
   Position,
 } from "@uniswap/v3-sdk";
-import { ethers } from "ethers";
 import {
   CurrentConfig,
-  NONFUNGIBLE_POSITION_MANAGER_ABI,
   NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
 } from "./constants";
 import { getPoolInfo } from "./pool";
@@ -216,31 +215,24 @@ export async function mintPosition({
  *
  *
  * @export
- * @param {import('ethers').providers.Provider} provider
  * @param {number} tokenId
  *
  * @return {Promise<Position>}
  */
-export async function getPositionInfo(provider, positionId) {
-  if (!provider) {
+export async function getPositionInfo(positionId) {
+  if (!positionId) {
     throw new Error("No provider available");
   }
 
-  const positionContract = new ethers.Contract(
-    NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
-    NONFUNGIBLE_POSITION_MANAGER_ABI,
-    provider
+  const res = await axios.post(
+    "https://api.thegraph.com/subgraphs/name/liqwiz/uniswap-v3-goerli",
+    {
+      query:
+        `\n{  position(id: ${positionId}) {\n    id\n    owner\n    token0 {\n      id\n      name\n      decimals\n      symbol\n    }\n    token1 {\n      id\n      name\n      decimals\n      symbol\n    }\n    depositedToken0\n    depositedToken1\n  withdrawnToken0\n  withdrawnToken1\n    collectedFeesToken0\n    collectedFeesToken1\n    liquidity\n  \tfeeGrowthInside0LastX128\n  \tfeeGrowthInside1LastX128\n}   \n}`,
+    }
   );
 
-  const position = await positionContract.positions(positionId);
+  const {position} = res.data.data;
 
-  return {
-    tickLower: position.tickLower,
-    tickUpper: position.tickUpper,
-    liquidity: position.liquidity.toString(),
-    feeGrowthInside0LastX128: position.feeGrowthInside0LastX128.toString(),
-    feeGrowthInside1LastX128: position.feeGrowthInside1LastX128.toString(),
-    tokensOwed0: position.tokensOwed0.toString(),
-    tokensOwed1: position.tokensOwed1.toString(),
-  };
+  return  position;
 }
