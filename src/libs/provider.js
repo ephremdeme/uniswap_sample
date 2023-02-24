@@ -1,10 +1,10 @@
 import { BigNumber, ethers } from "ethers";
-import { INFURA_GORLI_RPC } from "./constants";
+import { INFURA_RPC_ADDRESS } from "./constants";
 import ERC20_ABI from "./ERC20_abi.json";
 import { fromReadableAmount } from "./utils";
 
 export function getProvider() {
-  return new ethers.providers.JsonRpcProvider(INFURA_GORLI_RPC, 5);
+  return new ethers.providers.JsonRpcProvider(INFURA_RPC_ADDRESS, 5);
 }
 
 export const TransactionState = {

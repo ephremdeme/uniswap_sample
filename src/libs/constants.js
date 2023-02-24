@@ -37,12 +37,11 @@ export const GOERLI_UNI_CONTRACT_ADDRESS =
 export const GOERLI_USDT_CONTRACT_ADDRESS =
   "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49";
 
-export const { INFURA_GORLI_RPC } = process.env;
 export const { PRIVATE_KEY } = process.env;
 export const { INFURA_RPC_ADDRESS } = process.env;
 export const { DEMO_USERNAME } = process.env;
-export const { DEMO_PASSWORD, ACCESS_TOKEN_SECRET } = process.env;
-
+export const { DEMO_PASSWORD, ACCESS_TOKEN_SECRET, NETWORK_ID: NETWORK_ID_, UNISWAP_GRAPH_URL } = process.env;
+export const NETWORK_ID = parseInt(NETWORK_ID_, 10);
 export const CurrentConfig = {
   rpc: {
     local: "https://mainnet.infura.io/v3/f052b40a54c246d996378b63e8dcea38",

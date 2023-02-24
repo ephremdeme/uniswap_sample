@@ -2,7 +2,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { Wallet } from "ethers";
-import { INFURA_GORLI_RPC } from "../libs/constants";
+import { INFURA_RPC_ADDRESS } from "../libs/constants";
 import { decrypt, encrypt } from "../libs/encrypt";
 
 import Account from "../models/accounts";
@@ -64,7 +64,7 @@ accountRoute.get("/:id/tokens", async (req, res) => {
   if (!account) return res.status(404).json({ message: "Account not found" });
 
   const uniswapClient = new Uniswap(
-    INFURA_GORLI_RPC,
+    INFURA_RPC_ADDRESS,
     decrypt(account.privateKey)
   );
   const tokens = await Promise.all(
