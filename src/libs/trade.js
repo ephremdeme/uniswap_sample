@@ -9,7 +9,7 @@ import {
 import { ethers, Wallet } from "ethers";
 import { AlphaRouter, ChainId, SwapType } from "@uniswap/smart-order-router";
 
-import { V3_SWAP_ROUTER_ADDRESS } from "./constants";
+import { NETWORK_ID, V3_SWAP_ROUTER_ADDRESS } from "./constants";
 
 import { fromReadableAmount } from "./utils";
 import {
@@ -60,7 +60,7 @@ export async function executeTrade({
     value: route?.methodParameters?.value,
     from: wallet.address,
     gasLimit: 5000000,
-    chainId: SupportedChainId.GOERLI,
+    chainId: NETWORK_ID,
   });
 
   return res;
@@ -104,6 +104,53 @@ export async function generateRoute({
     ),
     tokenOut,
     TradeType.EXACT_INPUT,
+    options,
+    {
+      maxSwapsPerPath: 3, // default is 3
+    }
+  );
+
+  return route;
+}
+
+/**
+ *
+ *
+ * @export
+ * @param {Object} options
+ * @param {providers.Provider} options.provider
+ * @param {Token} options.tokenIn
+ * @param {Token} options.tokenOut
+ * @param {String} options.amount
+ * @param {String} options.walletAddress
+ * @return {Promise<import("@uniswap/smart-order-router").SwapRoute | null>}
+ */
+export async function generateRouteForOutPut({
+  provider,
+  tokenIn,
+  tokenOut,
+  amount,
+  walletAddress,
+}) {
+  const router = new AlphaRouter({
+    chainId: ChainId.GÖRLI,
+    provider,
+  });
+
+  const options = {
+    recipient: walletAddress,
+    slippageTolerance: new Percent(5, 100),
+    deadline: Math.floor(Date.now() / 1000 + 1800),
+    type: SwapType.SWAP_ROUTER_02,
+  };
+
+  const route = await router.route(
+    CurrencyAmount.fromRawAmount(
+      tokenIn,
+      fromReadableAmount(amount, tokenIn.decimals).toString()
+    ),
+    tokenOut,
+    TradeType.EXACT_OUTPUT, // To Exchange Exact Output Amount of Token Out
     options,
     {
       maxSwapsPerPath: 3, // default is 3
