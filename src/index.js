@@ -8,8 +8,11 @@ import route from "./routes/uniswap";
 import authenticate from "./middleware/authentication";
 import accountRoute from "./routes/accounts";
 import tokenRoute from "./routes/tokens";
+import './liquidityChecker'
 
 const app = express();
+
+connectDb();
 
 app.use(express.json());
 app.use(cors());
@@ -39,4 +42,3 @@ app.listen(process.env.PORT || PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-connectDb();
