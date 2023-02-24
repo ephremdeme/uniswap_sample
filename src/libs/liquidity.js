@@ -1,4 +1,4 @@
-import { CurrencyAmount, Percent, SupportedChainId } from "@uniswap/sdk-core";
+import { CurrencyAmount, Percent } from "@uniswap/sdk-core";
 import axios from "axios";
 import {
   nearestUsableTick,
@@ -8,7 +8,9 @@ import {
 } from "@uniswap/v3-sdk";
 import {
   CurrentConfig,
+  NETWORK_ID,
   NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+  UNISWAP_GRAPH_URL,
 } from "./constants";
 import { getPoolInfo } from "./pool";
 import {
@@ -205,7 +207,7 @@ export async function mintPosition({
     value,
     from: wallet.address,
     gasLimit: 5000000,
-    chainId: SupportedChainId.GOERLI,
+    chainId: NETWORK_ID,
   };
 
   return sendTransactionViaWallet(wallet, transaction);
@@ -221,18 +223,18 @@ export async function mintPosition({
  */
 export async function getPositionInfo(positionId) {
   if (!positionId) {
-    throw new Error("No provider available");
+    throw new Error("No Position Available");
   }
 
-  const res = await axios.post(
-    "https://api.thegraph.com/subgraphs/name/liqwiz/uniswap-v3-goerli",
-    {
-      query:
-        `\n{  position(id: ${positionId}) {\n    id\n    owner\n    token0 {\n      id\n      name\n      decimals\n      symbol\n    }\n    token1 {\n      id\n      name\n      decimals\n      symbol\n    }\n    depositedToken0\n    depositedToken1\n  withdrawnToken0\n  withdrawnToken1\n    collectedFeesToken0\n    collectedFeesToken1\n    liquidity\n  \tfeeGrowthInside0LastX128\n  \tfeeGrowthInside1LastX128\n}   \n}`,
-    }
-  );
+  const res = await axios.post(UNISWAP_GRAPH_URL, {
+    query: `\n{  position(id: ${positionId}) {\n    id\n    owner\n    token0 {\n      id\n      name\n      decimals\n      symbol\n    }\n    token1 {\n      id\n      name\n      decimals\n      symbol\n    }\n    depositedToken0\n    depositedToken1\n  withdrawnToken0\n  withdrawnToken1\n    collectedFeesToken0\n    collectedFeesToken1\n    liquidity\n  \tfeeGrowthInside0LastX128\n  \tfeeGrowthInside1LastX128\n}   \n}`,
+  });
 
-  const {position} = res.data.data;
+  if (!res.data || !res.data.data || !res.data.data.position) {
+    throw new Error("No Position Available");
+  }
 
-  return  position;
+  const { position } = res.data.data;
+
+  return position;
 }

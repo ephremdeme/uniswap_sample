@@ -1,13 +1,13 @@
 import express from "express";
 import Uniswap from "../uniswap";
-import { INFURA_GORLI_RPC, PRIVATE_KEY } from "../libs/constants";
+import { INFURA_RPC_ADDRESS, PRIVATE_KEY } from "../libs/constants";
 import { swapTwoTokensValidator } from "../validators/uniswap.validtor";
 import Account from "../models/accounts";
 import { decrypt } from "../libs/encrypt";
 import Liquidity from "../models/liquidity";
 
 const route = express.Router();
-const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
+const uniswapClient = new Uniswap(INFURA_RPC_ADDRESS, PRIVATE_KEY);
 
 // get exchange rate from token to token (tokenFrom, tokenTo)
 route.get("/exchange-rate/:tokenFrom/:tokenTo", async (req, res) => {
@@ -48,7 +48,7 @@ route.get("/:walletId/positions", async (req, res) => {
 
   const privateKey = decrypt(wallet.privateKey); //
 
-  const uniClient = new Uniswap(INFURA_GORLI_RPC, privateKey);
+  const uniClient = new Uniswap(INFURA_RPC_ADDRESS, privateKey);
 
   const positions = await uniClient.getLiquidityPositions();
   return res.json(positions);
@@ -57,7 +57,11 @@ route.get("/:walletId/positions", async (req, res) => {
 // remove liquidity
 route.put("/:walletId/positions/:posId", async (req, res) => {
   const { walletId } = req.params;
-  const { stopLoss, id: positionId } = req.body;
+  const { stopLoss, id } = req.body;
+
+  await Liquidity.deleteMany({ positionId: id })
+
+  const positionId = parseInt(id, 10);
 
   const wallet = await Account.findById(walletId);
 
@@ -67,7 +71,7 @@ route.put("/:walletId/positions/:posId", async (req, res) => {
 
   const privateKey = decrypt(wallet.privateKey); //
 
-  const uniClient = new Uniswap(INFURA_GORLI_RPC, privateKey);
+  const uniClient = new Uniswap(INFURA_RPC_ADDRESS, privateKey);
 
   const liquidityPosition = await uniClient.getLiquidityPosition(positionId);
 
@@ -75,12 +79,20 @@ route.put("/:walletId/positions/:posId", async (req, res) => {
     return res.status(400).json({ error: "Position not found" });
   }
 
-  const liquidity = await Liquidity.create({
-    positionId,
-    // eslint-disable-next-line no-underscore-dangle
-    wallet: wallet._id,
-    stopLoss,
-  });
+  const liquidity = await Liquidity.updateOne(
+    { positionId },
+    {
+      $set: {
+        positionId,
+        // eslint-disable-next-line no-underscore-dangle
+        wallet: wallet._id,
+        stopLoss,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
 
   return res.json(liquidity);
 });
@@ -112,7 +124,7 @@ route.post("/swap", async (req, res) => {
 
   const privateKey = decrypt(wallet.privateKey); //
 
-  const uniClient = new Uniswap(INFURA_GORLI_RPC, privateKey);
+  const uniClient = new Uniswap(INFURA_RPC_ADDRESS, privateKey);
 
   const status = await uniClient.exchangeToken(token1, token2, token1Amount);
 

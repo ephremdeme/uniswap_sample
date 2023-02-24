@@ -2,6 +2,7 @@
 // Attributes: positionId, stopLoss, wallet
 
 import mongoose from "mongoose";
+import Account from "./accounts";
 
 const { Schema } = mongoose;
 
@@ -20,7 +21,7 @@ const LiquiditySchema = new Schema(
     },
     wallet: {
       type: Schema.Types.ObjectId,
-      ref: "Account",
+      ref: Account,
     },
   },
   {
