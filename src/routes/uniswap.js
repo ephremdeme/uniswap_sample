@@ -4,6 +4,7 @@ import { INFURA_GORLI_RPC, PRIVATE_KEY } from "../libs/constants";
 import { swapTwoTokensValidator } from "../validators/uniswap.validtor";
 import Account from "../models/accounts";
 import { decrypt } from "../libs/encrypt";
+import Liquidity from "../models/liquidity";
 
 const route = express.Router();
 const uniswapClient = new Uniswap(INFURA_GORLI_RPC, PRIVATE_KEY);
@@ -54,18 +55,34 @@ route.get("/:walletId/positions", async (req, res) => {
 });
 
 // remove liquidity
-route.post("/:walletId/positions/:posId", async (req, res) => {
-  const { posId } = req.params;
-  const { tokenA, tokenB, amountA, amountB } = req.body;
+route.put("/:walletId/positions/:posId", async (req, res) => {
+  const { walletId } = req.params;
+  const { stopLoss, id: positionId } = req.body;
 
-  const txId = await uniswapClient.removeLiquidity(
-    posId,
-    tokenA,
-    tokenB,
-    amountA,
-    amountB
-  );
-  res.json(txId);
+  const wallet = await Account.findById(walletId);
+
+  if (!wallet) {
+    return res.status(400).json({ error: "Wallet not found" });
+  }
+
+  const privateKey = decrypt(wallet.privateKey); //
+
+  const uniClient = new Uniswap(INFURA_GORLI_RPC, privateKey);
+
+  const liquidityPosition = await uniClient.getLiquidityPosition(positionId);
+
+  if (!liquidityPosition || parseInt(liquidityPosition.liquidity, 10) === 0) {
+    return res.status(400).json({ error: "Position not found" });
+  }
+
+  const liquidity = await Liquidity.create({
+    positionId,
+    // eslint-disable-next-line no-underscore-dangle
+    wallet: wallet._id,
+    stopLoss,
+  });
+
+  return res.json(liquidity);
 });
 
 // add liquidity
