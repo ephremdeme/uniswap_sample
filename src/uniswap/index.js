@@ -190,6 +190,9 @@ class Uniswap {
         parseInt(tokenOfOwnerByIndex.toString(), 10)
       );
 
+      // eslint-disable-next-line no-continue
+      if(position.liquidity === '0') continue;
+
       const liquidity = await Liquidity.findOne({
         positionId: parseInt(tokenOfOwnerByIndex.toString(), 10),
       });
